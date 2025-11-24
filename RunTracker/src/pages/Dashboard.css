@@ -1,0 +1,19 @@
+.dashboard {
+  display: flex;
+  height: 100vh;        /* Full page height */
+  width: 100%;          /* Full page width */
+}
+
+.your-activities {
+  flex: 1;              /* Takes half the page */
+  overflow-y: auto;
+  background: #f8f8f8;  /* Optional */
+}
+
+.map-side {
+  flex: 1;              /* ← This makes the map fill remaining width */
+  min-width: 300px;     /* Safety */
+  height: 100vh;        /* Full height */
+  position: relative;   /* Required for map */
+  
+}

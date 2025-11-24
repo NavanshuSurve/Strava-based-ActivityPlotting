@@ -1,0 +1,8 @@
+.global-map-container {
+  width: 100vh;
+  height: 100vh;
+  position: absolute; /* Important */
+  top: 0;
+  left: 0;
+  background: #ddd; /* Fallback so you can see the container */
+}
