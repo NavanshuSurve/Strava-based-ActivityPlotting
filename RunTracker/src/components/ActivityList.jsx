@@ -13,10 +13,13 @@ export default function ActivityList() {
   return (
       
         <div className="your-activities">
-          {activities.map((act) => (
-            <Activity key={act.id} id={act.id} />
+          {
+          activities.map((act) => (
+            <Activity key={act.id} id={act.id} name={act.name} />
+            
             
           ))}
+          
         </div>
 
       

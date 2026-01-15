@@ -1,8 +1,8 @@
 .global-map-container {
-  width: 100vh;
-  height: 100vh;
-  position: absolute; /* Important */
-  top: 0;
-  left: 0;
-  background: #ddd; /* Fallback so you can see the container */
+  width: 100vh;       
+  height: 100vh;      /* full viewport height (or use 100% of parent if preferred) */
+  
+  
+  background: #fdfcfc; /* subtle fallback background */
+  z-index: 0;
 }

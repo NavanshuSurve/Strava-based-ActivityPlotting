@@ -1,100 +1,89 @@
 import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import "./GlobalMap.css";
 import api from "../api";
-
+import "./GlobalMap.css";
 export default function GlobalMap() {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
-
   const [routes, setRoutes] = useState([]);
 
-  //
-  // 1. Fetch ALL routes stored in backend
-  //
+  // 1. Fetch data correctly
   useEffect(() => {
     api.get("/api/globalmap").then((res) => {
-      console.log("Fetched global routes:", res.data.routes);
+      // Based on your JSON, the array is res.data.routes
       setRoutes(res.data.routes || []);
     });
   }, []);
 
-  //
   // 2. Initialize map
-  //
   useEffect(() => {
     if (!mapContainerRef.current || mapRef.current) return;
 
     mapRef.current = new maplibregl.Map({
       container: mapContainerRef.current,
-      style: "https://demotiles.maplibre.org/style.json",
-      center: [0, 0],
-      zoom: 2,
+      style: `https://api.maptiler.com/maps/streets-v2/style.json?key=rs0Hhpyy77r5uZ7FxM3Q`,
+      center: [77.96, 30.41], // Centered near your data (Doonga)
+      zoom: 12,
     });
 
     mapRef.current.addControl(new maplibregl.NavigationControl(), "top-right");
   }, []);
 
-  //
-  // 3. Plot all routes
-  //
+  // 3. Plot all routes as Lines
   useEffect(() => {
     if (!mapRef.current || routes.length === 0) return;
 
-    const addRoutes = () => {
+    const map = mapRef.current;
+
+    const addRoutesToMap = () => {
       const bounds = new maplibregl.LngLatBounds();
 
-      routes.forEach((route, index) => {
-        const sourceId = `route-${index}`;
+      routes.forEach((routeObj, index) => {
+        const sourceId = `route-source-${index}`;
+        const layerId = `route-layer-${index}`;
 
-        // Convert each route to GeoJSON
-        const geojson = {
-          type: "FeatureCollection",
-          features: route.map((coord) => ({
-            type: "Feature",
-            geometry: {
-              type: "Point",
-              coordinates: [coord[1], coord[0]], // lng, lat
-            },
-          })),
-        };
+        // IMPORTANT: Swap [lat, lng] to [lng, lat] for MapLibre
+        const lngLatCoords = routeObj.data.map((coord) => [coord[1], coord[0]]);
 
-        // Expand the bounds to include this route
-        route.forEach((coord) => bounds.extend([coord[1], coord[0]]));
+        // Extend bounds so all routes are visible
+        lngLatCoords.forEach((c) => bounds.extend(c));
 
-        // Prevent duplicates on hot reload
-        if (!mapRef.current.getSource(sourceId)) {
-          mapRef.current.addSource(sourceId, {
+        if (!map.getSource(sourceId)) {
+          map.addSource(sourceId, {
             type: "geojson",
-            data: geojson,
+            data: {
+              type: "Feature",
+              properties: { name: routeObj.key },
+              geometry: {
+                type: "LineString",
+                coordinates: lngLatCoords,
+              },
+            },
           });
 
-          mapRef.current.addLayer({
-            id: sourceId,
-            type: "circle",
+          map.addLayer({
+            id: layerId,
+            type: "line",
             source: sourceId,
+            layout: { "line-join": "round", "line-cap": "round" },
             paint: {
-              "circle-radius": 3,
-              "circle-color": "#ff0000",
-              "circle-opacity": 0.8,
+              "line-color": "#ff4d4d",
+              "line-width": 4,
+              "line-opacity": 0.7,
             },
           });
         }
       });
 
-      // Fit map to all routes
       if (!bounds.isEmpty()) {
-        mapRef.current.fitBounds(bounds, { padding: 30 });
+        map.fitBounds(bounds, { padding: 50 });
       }
     };
 
-    if (mapRef.current.loaded()) addRoutes();
-    else mapRef.current.on("load", addRoutes);
-
+    if (map.loaded()) addRoutesToMap();
+    else map.on("load", addRoutesToMap);
   }, [routes]);
 
-  return (
-    <div ref={mapContainerRef} className="global-map-container" />
-  );
+  return <div ref={mapContainerRef} style={{ width: "100vh", height: "100vh" }} />;
 }

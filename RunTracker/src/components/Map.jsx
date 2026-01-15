@@ -70,8 +70,8 @@ export default function Map({ latlng }) {
 
   }, [latlng]);
 
-  return (
-    <div
+  return (<>
+  <div
       ref={mapContainer}
       style={{
         height: "400px",
@@ -79,5 +79,7 @@ export default function Map({ latlng }) {
         borderRadius: "10px"
       }}
     />
+  </>
+    
   );
 }
